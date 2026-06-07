@@ -1,7 +1,0 @@
-fastapi
-uvicorn
-kafka-python
-opensearch-py
-psycopg2-binary
-pydantic
-python-dotenv
