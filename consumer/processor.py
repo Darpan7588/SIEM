@@ -15,5 +15,8 @@ def process_event(event: dict):
         "status": "processed",
         "event_id": event.get("event_id"),
         "event_type": event.get("event_type"),
+        "username": event.get("username"),
+        "source_ip": event.get("source_ip"),
+        "hostname": event.get("hostname"),
         "alert_generated": alert is not None
     }
