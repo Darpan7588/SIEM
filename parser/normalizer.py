@@ -6,6 +6,9 @@ def normalize_event(event: dict) -> dict:
 
     if source == "windows":
         event_id = raw_event.get("EventID")
+        username = raw_event.get("AccountName")
+        source_ip = raw_event.get("IpAddress")
+        hostname = raw_event.get("ComputerName")
 
         if event_id == 4625:
             normalized_type = "authentication_failure"
@@ -44,6 +47,9 @@ def normalize_event(event: dict) -> dict:
         "severity": event.get("severity"),
         "message": event.get("message"),
         "timestamp": event.get("timestamp"),
+        "username": username if source == "windows" else None,
+        "source_ip": source_ip if source == "windows" else None,
+        "hostname": hostname if source == "windows" else None,
         "raw_event": raw_event,
         "normalized": True
     }
