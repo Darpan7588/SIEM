@@ -52,6 +52,14 @@ def correlate_event(event: dict):
             "evidence_event_ids": [e.get("event_id") for e in failed_logins]
         }
 
-        return alert
+        matching_event_ids = set(alert["evidence_event_ids"])
+        matching_event_ids.add(event.get("event_id"))
 
-    return None
+        event_window[:] = [
+            e for e in event_window
+            if e.get("event_id") not in matching_event_ids
+        ]
+
+        return alert
+    
+    return None 
