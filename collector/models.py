@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 from enum import Enum
+from typing import Optional, Dict, Any
 
 
 class Severity(str, Enum):
@@ -27,3 +28,4 @@ class SecurityEvent(BaseModel):
     severity: Severity
     message: str
     timestamp: datetime
+    raw_event: Optional[Dict[str, Any]] = None
