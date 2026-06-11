@@ -10,8 +10,19 @@ class Severity(str, Enum):
     critical = "critical"
 
 
+class EventSource(str, Enum):
+    windows = "windows"
+    linux = "linux"
+    suricata = "suricata"
+    github = "github"
+    trivy = "trivy"
+    semgrep = "semgrep"
+    docker = "docker"
+    kubernetes = "kubernetes"
+
+
 class SecurityEvent(BaseModel):
-    source: str
+    source: EventSource
     event_type: str
     severity: Severity
     message: str

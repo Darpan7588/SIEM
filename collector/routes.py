@@ -1,20 +1,34 @@
 from fastapi import APIRouter
 from collector.models import SecurityEvent
 from collector.storage import events
+from uuid import uuid4
+from fastapi import HTTPException
 
 router = APIRouter()
 
 
 @router.post("/events")
 async def receive_event(event: SecurityEvent):
+    event_data = event.model_dump()
+    event_data["event_id"] = str(uuid4())
 
-    events.append(event.dict())
+    events.append(event_data)
 
     return {
         "status": "received",
+        "event_id": event_data["event_id"],
         "event_type": event.event_type
     }
+@router.get("/events/{event_id}")
+async def get_event(event_id: str):
+    for event in events:
+        if event["event_id"] == event_id:
+            return event
 
+    raise HTTPException(
+        status_code=404,
+        detail="Event not found"
+    )
 
 @router.get("/events")
 async def get_events():
