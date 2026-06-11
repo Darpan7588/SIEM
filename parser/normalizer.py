@@ -13,6 +13,15 @@ def normalize_event(event: dict) -> dict:
         elif event_id == 4624:
             normalized_type = "authentication_success"
 
+    if source == "linux":
+        action = raw_event.get("action")
+        service = raw_event.get("service")
+
+        if service == "ssh" and action == "failed_password":
+            normalized_type = "authentication_failure"
+        elif service == "ssh" and action == "accepted_password":
+            normalized_type = "authentication_success"
+        
     normalized_event = {
         "event_id": event.get("event_id"),
         "source": source,
