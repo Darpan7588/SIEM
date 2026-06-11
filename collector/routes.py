@@ -4,18 +4,20 @@ from collector.storage import events
 from uuid import uuid4
 from fastapi import HTTPException
 from parser.normalizer import normalize_event
+from collector.kafka_producer import send_event
 
 router = APIRouter()
 
 
 @router.post("/events")
 async def receive_event(event: SecurityEvent):
-    event_data = event.model_dump()
+    event_data = event.model_dump(mode = "json")
     event_data["event_id"] = str(uuid4())
 
     normalized_event = normalize_event(event_data)
     events.append(normalized_event)
-
+    send_event(normalized_event)
+    
     return {
         "status": "received",
         "event_id": event_data["event_id"],
