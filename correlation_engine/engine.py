@@ -3,6 +3,7 @@ print("LOADED INTELLIGENT CORRELATION ENGINE")
 from datetime import datetime, timedelta
 
 event_window = []
+processed_event_ids = set()
 
 
 def parse_time(timestamp: str):
@@ -10,6 +11,12 @@ def parse_time(timestamp: str):
 
 
 def correlate_event(event: dict):
+    event_id = event.get("event_id")
+
+    if event_id in processed_event_ids:
+        return None
+
+    processed_event_ids.add(event_id)
     event_window.append(event)
 
     current_time = parse_time(event.get("timestamp"))
@@ -39,6 +46,7 @@ def correlate_event(event: dict):
     ]
 
     if len(failed_logins) >= 5:
+        evidence_events = failed_logins[:5]
         alert = {
             "attack_type": "brute_force_login",
             "severity": "high",
@@ -48,18 +56,18 @@ def correlate_event(event: dict):
             "source_ip": source_ip,
             "hostname": hostname,
             "failed_attempts": len(failed_logins),
-            "success_event_id": event.get("event_id"),
-            "evidence_event_ids": [e.get("event_id") for e in failed_logins]
+            "success_event_id": event_id,
+            "evidence_event_ids": [e.get("event_id") for e in evidence_events]
         }
 
-        matching_event_ids = set(alert["evidence_event_ids"])
-        matching_event_ids.add(event.get("event_id"))
+        used_ids = set(alert["evidence_event_ids"])
+        used_ids.add(event_id)
 
         event_window[:] = [
             e for e in event_window
-            if e.get("event_id") not in matching_event_ids
+            if e.get("event_id") not in used_ids
         ]
 
         return alert
-    
-    return None 
+
+    return None
