@@ -48,22 +48,43 @@ def create_alert(alert_data: dict):
     return alert
 
 
-def get_alerts():
+def get_alerts(status=None, severity=None, attack_type=None):
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
+    query = """
         SELECT
             alert_id, created_at, status, attack_type, severity,
             confidence, message, username, source_ip, hostname,
             failed_attempts, success_event_id, evidence_event_ids
         FROM alerts
-        ORDER BY created_at DESC
-    """)
+    """
 
+    conditions = []
+    params = []
+
+    if status:
+        conditions.append("status = %s")
+        params.append(status)
+
+    if severity:
+        conditions.append("severity = %s")
+        params.append(severity)
+
+    if attack_type:
+        conditions.append("attack_type = %s")
+        params.append(attack_type)
+
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+
+    query += " ORDER BY created_at DESC"
+
+    cursor.execute(query, params)
     rows = cursor.fetchall()
 
     alerts = []
+
     for row in rows:
         alerts.append({
             "alert_id": row[0],

@@ -10,9 +10,16 @@ class AlertStatusUpdate(BaseModel):
 
 
 @router.get("/alerts")
-async def fetch_alerts():
-    return get_alerts()
-
+async def fetch_alerts(
+    status: str = None,
+    severity: str = None,
+    attack_type: str = None
+):
+    return get_alerts(
+        status=status,
+        severity=severity,
+        attack_type=attack_type
+    )
 
 @router.get("/alerts/{alert_id}")
 async def fetch_alert(alert_id: str):
