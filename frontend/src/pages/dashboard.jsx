@@ -132,6 +132,23 @@ function Dashboard() {
                             {selectedAlert.threat_intel?.provider || "unknown"}
                         </p>
 
+                    <h3>MITRE ATT&CK</h3>
+
+                        <p>
+                            <strong>Technique ID:</strong>{" "}
+                            {selectedAlert.mitre_attack?.technique_id || "UNKNOWN"}
+                        </p>
+
+                        <p>
+                            <strong>Technique Name:</strong>{" "}
+                            {selectedAlert.mitre_attack?.technique_name || "Unknown"}
+                        </p>
+
+                        <p>
+                            <strong>Tactic:</strong>{" "}
+                            {selectedAlert.mitre_attack?.tactic || "Unknown"}
+                        </p>
+
                     <h3>Change Status</h3>
 
                         <select
