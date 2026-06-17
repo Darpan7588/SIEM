@@ -109,6 +109,29 @@ function Dashboard() {
                     <p><strong>Hostname:</strong> {selectedAlert.hostname}</p>
                     <p><strong>Failed Attempts:</strong> {selectedAlert.failed_attempts}</p>
                     <p><strong>Message:</strong> {selectedAlert.message}</p>
+
+                        <h3>Threat Intelligence</h3>
+
+                        <p>
+                            <strong>Reputation:</strong>{" "}
+                            {selectedAlert.threat_intel?.reputation || "unknown"}
+                        </p>
+
+                        <p>
+                            <strong>Confidence Score:</strong>{" "}
+                            {selectedAlert.threat_intel?.confidence || 0}
+                        </p>
+
+                        <p>
+                            <strong>Category:</strong>{" "}
+                            {selectedAlert.threat_intel?.category || "unknown"}
+                        </p>
+
+                        <p>
+                            <strong>Provider:</strong>{" "}
+                            {selectedAlert.threat_intel?.provider || "unknown"}
+                        </p>
+
                     <h3>Change Status</h3>
 
                         <select
