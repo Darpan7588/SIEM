@@ -3,7 +3,7 @@ from uuid import uuid4
 from datetime import datetime
 from database.connection import get_connection
 from threat_intel.enrichment import enrich_alert
-
+from threat_intel.mitre_mapping import get_mitre_mapping
 
 def create_alert(alert_data: dict):
     alert = {
@@ -14,6 +14,10 @@ def create_alert(alert_data: dict):
     }
 
     alert = enrich_alert(alert)
+    alert["mitre_attack"] = get_mitre_mapping(
+    alert.get("attack_type")
+    )
+    print(alert)
     
     conn = get_connection()
     cursor = conn.cursor()
@@ -23,9 +27,9 @@ def create_alert(alert_data: dict):
         INSERT INTO alerts (
             alert_id, created_at, status, attack_type, severity,
             confidence, message, username, source_ip, hostname,
-            failed_attempts, success_event_id, evidence_event_ids, threat_intel
+            failed_attempts, success_event_id, evidence_event_ids, threat_intel, mitre_attack
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """,
         (
             alert["alert_id"],
@@ -41,7 +45,8 @@ def create_alert(alert_data: dict):
             alert.get("failed_attempts"),
             alert.get("success_event_id"),
             json.dumps(alert.get("evidence_event_ids", [])),
-            json.dumps(alert.get("threat_intel", {}))
+            json.dumps(alert.get("threat_intel", {})),
+            json.dumps(alert.get("mitre_attack", {}))
         )
     )
 
@@ -60,7 +65,7 @@ def get_alerts(status=None, severity=None, attack_type=None):
         SELECT
             alert_id, created_at, status, attack_type, severity,
             confidence, message, username, source_ip, hostname,
-            failed_attempts, success_event_id, evidence_event_ids, threat_intel
+            failed_attempts, success_event_id, evidence_event_ids, threat_intel, mitre_attack
         FROM alerts
     """
 
@@ -104,7 +109,8 @@ def get_alerts(status=None, severity=None, attack_type=None):
             "failed_attempts": row[10],
             "success_event_id": row[11],
             "evidence_event_ids": row[12],
-            "threat_intel": row[13] if row[13] else {}
+            "threat_intel": row[13] if row[13] else {},
+            "mitre_attack": row[14] if row[14] else {}
         })
 
     cursor.close()
@@ -120,7 +126,7 @@ def get_alert_by_id(alert_id: str):
         SELECT
             alert_id, created_at, status, attack_type, severity,
             confidence, message, username, source_ip, hostname,
-            failed_attempts, success_event_id, evidence_event_ids, threat_intel
+            failed_attempts, success_event_id, evidence_event_ids, threat_intel, mitre_attack
         FROM alerts
         WHERE alert_id = %s
     """, (alert_id,))
@@ -147,7 +153,8 @@ def get_alert_by_id(alert_id: str):
         "failed_attempts": row[10],
         "success_event_id": row[11],
         "evidence_event_ids": row[12],
-        "threat_intel": row[13] if row[13] else {}
+        "threat_intel": row[13] if row[13] else {},
+        "mitre_attack": row[14] if row[14] else {}
     }
 
 def update_alert_status(alert_id: str, status: str):
