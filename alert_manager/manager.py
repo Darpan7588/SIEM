@@ -2,6 +2,7 @@ import json
 from uuid import uuid4
 from datetime import datetime
 from database.connection import get_connection
+from threat_intel.enrichment import enrich_alert
 
 
 def create_alert(alert_data: dict):
@@ -12,6 +13,8 @@ def create_alert(alert_data: dict):
         **alert_data
     }
 
+    alert = enrich_alert(alert)
+    
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -20,9 +23,9 @@ def create_alert(alert_data: dict):
         INSERT INTO alerts (
             alert_id, created_at, status, attack_type, severity,
             confidence, message, username, source_ip, hostname,
-            failed_attempts, success_event_id, evidence_event_ids
+            failed_attempts, success_event_id, evidence_event_ids, threat_intel
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """,
         (
             alert["alert_id"],
@@ -37,7 +40,8 @@ def create_alert(alert_data: dict):
             alert.get("hostname"),
             alert.get("failed_attempts"),
             alert.get("success_event_id"),
-            json.dumps(alert.get("evidence_event_ids", []))
+            json.dumps(alert.get("evidence_event_ids", [])),
+            json.dumps(alert.get("threat_intel", {}))
         )
     )
 
@@ -56,7 +60,7 @@ def get_alerts(status=None, severity=None, attack_type=None):
         SELECT
             alert_id, created_at, status, attack_type, severity,
             confidence, message, username, source_ip, hostname,
-            failed_attempts, success_event_id, evidence_event_ids
+            failed_attempts, success_event_id, evidence_event_ids, threat_intel
         FROM alerts
     """
 
@@ -99,7 +103,8 @@ def get_alerts(status=None, severity=None, attack_type=None):
             "hostname": row[9],
             "failed_attempts": row[10],
             "success_event_id": row[11],
-            "evidence_event_ids": row[12]
+            "evidence_event_ids": row[12],
+            "threat_intel": row[13] if row[13] else {}
         })
 
     cursor.close()
@@ -115,7 +120,7 @@ def get_alert_by_id(alert_id: str):
         SELECT
             alert_id, created_at, status, attack_type, severity,
             confidence, message, username, source_ip, hostname,
-            failed_attempts, success_event_id, evidence_event_ids
+            failed_attempts, success_event_id, evidence_event_ids, threat_intel
         FROM alerts
         WHERE alert_id = %s
     """, (alert_id,))
@@ -141,7 +146,8 @@ def get_alert_by_id(alert_id: str):
         "hostname": row[9],
         "failed_attempts": row[10],
         "success_event_id": row[11],
-        "evidence_event_ids": row[12]
+        "evidence_event_ids": row[12],
+        "threat_intel": row[13] if row[13] else {}
     }
 
 def update_alert_status(alert_id: str, status: str):
